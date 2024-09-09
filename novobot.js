@@ -1,64 +1,14 @@
-const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js')
-const qrcode = require('qrcode-terminal')
-const commander = require('commander')
-const axios = require('axios')
-const urlRegex = require('url-regex')
-
-const STICKER_COMMAND = "/sticker"
-
-const MediaType = {
-    Image: { contentType: "image/jpeg", fileName: "image.jpg" },
-    Video: { contentType: "video/mp4", fileName: "image.mp4" }
-}
-
-// Parse command line arguments
-commander
-    .usage('[OPTIONS]...')
-    .option('-d, --debug', 'Show debug logs', false)
-    .option('-c, --chrome <value>', 'Use a installed Chrome Browser')
-    .option('-f, --ffmpeg <value>', 'Use a different ffmpeg')
-    .parse(process.argv)
-
-const options = commander.opts()
-
-const log_debug = options.debug ? console.log : () => { }
-const puppeteerConfig = !options.chrome ? { executablePath: "/usr/bin/chromium-browser", args: ['--no-sandbox'] } : { executablePath: "/usr/bin/chromium-browser", args: ['--no-sandbox'] }
-const ffmpegPath = options.ffmpeg ? options.ffmpeg : undefined
-
-// Inicialize WhatsApp Web client
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    ffmpegPath,
-    puppeteer: puppeteerConfig,
-    webVersionCache: {
-        type: "remote",
-        remotePath:
-          "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
-    },
-})
-
-client.on('ready', async () => {
-    console.log('READY');
-    const debugWWebVersion = await client.getWWebVersion();
-    console.log(`WWebVersion = ${debugWWebVersion}`);
-
-    client.pupPage.on('pageerror', function(err) {
-        console.log('Page error: ' + err.toString());
-    });
-    client.pupPage.on('error', function(err) {
-        console.log('Page error: ' + err.toString());
-    });
+const qrcode = require('qrcode-terminal');
+const { Client, Buttons, List, MessageMedia, MessageTypes } = require('whatsapp-web.js');
+const client = new Client ();
     
+client.on('qr', qr => {
+    qrcode.generate(qr, {small: true});
 });
 
-client.on('qr', qr => {
-    qrcode.generate(qr, { small: true })
-})
-
 client.on('ready', () => {
-    console.log('novobot is ready!')
-})
-
+    console.log('Conectado com sucesso!');
+});
 
 client.initialize();
 
