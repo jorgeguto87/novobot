@@ -1,44 +1,41 @@
-const { Client, MessageMedia, Location, Poll, List, Buttons, LocalAuth } = require('whatsapp-web.js');
+const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js')
+const qrcode = require('qrcode-terminal')
+const commander = require('commander')
+const axios = require('axios')
+const urlRegex = require('url-regex')
 
+const STICKER_COMMAND = "/sticker"
+
+const MediaType = {
+    Image: { contentType: "image/jpeg", fileName: "image.jpg" },
+    Video: { contentType: "video/mp4", fileName: "image.mp4" }
+}
+
+// Parse command line arguments
+commander
+    .usage('[OPTIONS]...')
+    .option('-d, --debug', 'Show debug logs', false)
+    .option('-c, --chrome <value>', 'Use a installed Chrome Browser')
+    .option('-f, --ffmpeg <value>', 'Use a different ffmpeg')
+    .parse(process.argv)
+
+const options = commander.opts()
+
+const log_debug = options.debug ? console.log : () => { }
+const puppeteerConfig = !options.chrome ? { executablePath: "/usr/bin/chromium-browser", args: ['--no-sandbox'] } : { executablePath: "/usr/bin/chromium-browser", args: ['--no-sandbox'] }
+const ffmpegPath = options.ffmpeg ? options.ffmpeg : undefined
+
+// Inicialize WhatsApp Web client
 const client = new Client({
     authStrategy: new LocalAuth(),
-    // proxyAuthentication: { username: 'username', password: 'password' },
-    puppeteer: { 
-        // args: ['--proxy-server=proxy-server-that-requires-authentication.example.com'],
-        headless: false,
-    }
-});
-
-// client initialize does not finish at ready now.
-client.initialize();
-
-client.on('loading_screen', (percent, message) => {
-    console.log('LOADING SCREEN', percent, message);
-});
-
-// Pairing code only needs to be requested once
-let pairingCodeRequested = false;
-client.on('qr', async (qr) => {
-    // NOTE: This event will not be fired if a session is specified.
-    console.log('QR RECEIVED', qr);
-
-    // paiuting code example
-    const pairingCodeEnabled = false;
-    if (pairingCodeEnabled && !pairingCodeRequested) {
-        const pairingCode = await client.requestPairingCode('96170100100'); // enter the target phone number
-        console.log('Pairing code enabled, code: '+ pairingCode);
-        pairingCodeRequested = true;
-    }
-});
-
-client.on('authenticated', () => {
-    console.log('AUTHENTICATED');
-});
-
-client.on('auth_failure', msg => {
-    // Fired if session restore was unsuccessful
-    console.error('AUTHENTICATION FAILURE', msg);
-});
+    ffmpegPath,
+    puppeteer: puppeteerConfig,
+    webVersionCache: {
+        type: "remote",
+        remotePath:
+          "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
+    },
+})
 
 client.on('ready', async () => {
     console.log('READY');
@@ -53,6 +50,15 @@ client.on('ready', async () => {
     });
     
 });
+
+client.on('qr', qr => {
+    qrcode.generate(qr, { small: true })
+})
+
+client.on('ready', () => {
+    console.log('novobot is ready!')
+})
+
 
 client.initialize();
 
