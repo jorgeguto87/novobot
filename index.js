@@ -112,7 +112,7 @@ client.on('message', async msg => {
         await delay(3000);
         const contact = await msg.getContact();
         const name = contact.pushname;
-        await client.sendMessage(msg.from,'*Fala* '+ name.split(" ")[0] + ', o que manda?\n\n_Eu sou um teste de *CHATBOT* e estou funcionando perfeitamente._');
+        await client.sendMessage(msg.from,'*Fala* '+ name.split(" ")[0] + ', tudo bem?\n\n_Eu sou um teste de *CHATBOT* e estou funcionando perfeitamente!_');
 
     }
 
